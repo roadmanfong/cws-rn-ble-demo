@@ -7,7 +7,10 @@ import {
   StatusBar,
   FlatList,
   Button,
-  TouchableOpacity
+  TouchableOpacity,
+  PermissionsAndroid,
+  Alert,
+  Platform
 } from 'react-native';
 import Modal from 'react-native-modal';
 import RNBleTransport from "@coolwallets/transport-react-native-ble";
@@ -42,6 +45,24 @@ export default class App extends React.Component {
     this.setState({
       isModalVisible: true
     })
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+        {
+          title: "Bluetooth",
+          message: "Bluetooth",
+          buttonNeutral: "Ask Me Later",
+          buttonNegative: "Cancel",
+          buttonPositive: "OK"
+        }
+      )
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      } else {
+        Alert.alert('Error', granted)
+        return
+      }
+    }
+
     this.unsubscriber = await RNBleTransport.listen(async (error, device) => {
       if (device) {
         if (this.state.searchDevices.
